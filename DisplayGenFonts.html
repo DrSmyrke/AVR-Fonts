@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Генератор шрифтов</title>
+	</head>
+	<style>
+	.display{
+		border-collapse:collapse !important;
+	}
+	.display td{
+		width:10px;
+		height:10px;
+		border:1px solid black;
+	}
+	.selected{background-color:rgb(100,100,100);}
+	#output{
+		font-family:Arial;
+		border:1px dashed black;
+	}
+	</style>
+	<body>
+	Ширина символа: <input type="number" min="0" max="100" value="7" id="wsym" onChange="genTable();"> px | 
+	Высота символа: <input type="number" min="0" max="100" value="8" id="hsym" onChange="genTable();"> px | 
+	Ширина блока данных: <input type="number" min="0" max="100" value="7" id="wblock" onChange="genTable();"> px | 
+	Высота блока данных: <input type="number" min="0" max="100" value="8" id="hblock" onChange="genTable();"> px
+	<br>
+	<div id="display"></div><br>
+	<input type="button" value="UP" onClick="up();"><br>
+	Адресация: <input type="radio" name="addr" value="v" checked>вертикальная | <input type="radio"  value="h" name="addr">горизонтальная | <input type="button" value="Очистить поле" onClick="genTable();"><br>
+	<div id="output"></div>
+	</body>
+</html>
+<script>
+var addrDat="v";
+genTable();
+function genTable(){
+	var wSym=parseInt(document.getElementById("wsym").value);
+	var hSym=parseInt(document.getElementById("hsym").value);
+	var wBlock=parseInt(document.getElementById("wblock").value);
+	var hBlock=parseInt(document.getElementById("hblock").value);
+	var obj=document.getElementById("display");
+	var data='<table class="display">';
+	for(var y=1;y<=hSym;y++){
+		data+='<tr>';
+		for(var x=1;x<=wSym;x++){
+			var adw;
+			var adh;
+			adw=(isInteger(x/wBlock))?"border-right:3px solid black;":"";
+			adh=(isInteger(y/hBlock))?"border-bottom:3px solid black;":"";
+			data+='<td onClick="changeBox(this);" id="b'+x+'_'+y+'" style="'+adw+adh+'"></td>';
+		}
+		data+='</tr>';
+	}
+	obj.innerHTML=data+'</table>';
+}
+function changeBox(obj){
+	obj.className=(obj.className!="selected")?"selected":"";
+	parsingData();
+}
+function isInteger(num) {
+  return (num ^ 0) === num;
+}
+function parsingData(){
+	var addrData=document.getElementsByName("addr");
+	var wSym=parseInt(document.getElementById("wsym").value);
+	var hSym=parseInt(document.getElementById("hsym").value);
+	var wBlock=parseInt(document.getElementById("wblock").value);
+	var hBlock=parseInt(document.getElementById("hblock").value);
+	for(var i=0;i<addrData.length;i++){if(addrData[i].checked){addrDat=addrData[i].value;break;}}
+	var data="";
+	if(addrDat=="v"){
+		var v1=hBlock;
+		var v2=0;
+		while(v1<=hSym){
+			for(var x=1;x<=wSym;x++){
+				var elem="";
+				for(var y=v1;y>v2;y--){elem+=(document.getElementById("b"+x+"_"+y).className!="selected")?0:1;}
+				elem=parseInt(elem, 2).toString(16);
+				data+="0x"+elem.toUpperCase();
+				data+=",";
+			}
+			data+="<br>";
+			v1+=hBlock;
+			v2+=hBlock;
+			//if(v1>hSym){
+			//	var r=v1-hSym;
+			//	v1-=r;
+			//}
+		}
+	}
+	document.getElementById("output").innerHTML=data;
+}
+function up(){
+	var wSym=parseInt(document.getElementById("wsym").value);
+	var hSym=parseInt(document.getElementById("hsym").value);
+	var wBlock=parseInt(document.getElementById("wblock").value);
+	var hBlock=parseInt(document.getElementById("hblock").value);
+	for(var y=2;y<=hSym;y++){
+		for(var x=1;x<=wSym;x++){
+			var elem=(document.getElementById("b"+x+"_"+y).className!="selected")?0:1;
+			document.getElementById("b"+x+"_"+y).className="";
+			var obj=document.getElementById("b"+x+"_"+(y-1));
+			obj.className=(elem==1)?"selected":"";
+		}
+	}
+	parsingData();
+}
+</script>
